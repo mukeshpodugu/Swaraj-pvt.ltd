@@ -1,0 +1,333 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  STAFF
+  AGENT
+  CUSTOMER
+}
+
+enum KYCStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum LoanStatus {
+  APPLIED
+  APPROVED
+  REJECTED
+  DISBURSED
+  CLOSED
+}
+
+enum LoanType {
+  PERSONAL
+  HOME
+  GOLD
+  BUSINESS
+  VEHICLE
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  OVERDUE
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String
+  fullName     String
+  phone        String      @unique
+  role         UserRole    @default(CUSTOMER)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  // Relations
+  customerProfile   CustomerProfile?
+  agentPolicies     LICPolicy[]       @relation("AgentPolicies")
+  auditLogs         AuditLog[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model CustomerProfile {
+  id               String    @id @default(uuid())
+  userId           String    @unique
+  aadhaar          String    @unique
+  pan              String    @unique
+  photoUrl         String?
+  address          String
+  nomineeName      String
+  nomineeRelation  String
+  nomineePhone     String
+  employmentStatus String
+  employerName     String?
+  monthlyIncome    Float
+  kycStatus        KYCStatus @default(PENDING)
+  kycNotes         String?
+  verifiedAt       DateTime?
+  status           String    @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  
+  // Relations
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loans            Loan[]
+  chits            ChitMember[]
+  chitInstallments ChitInstallment[]
+  licPolicies      LICPolicy[]
+  aiPredictions    AIPredictionLog[]
+  notifications    NotificationLog[]
+  wonChitAuctions  ChitAuction[]
+
+  @@index([kycStatus])
+}
+
+model Loan {
+  id                     String            @id @default(uuid())
+  customerId             String
+  loanType               LoanType
+  principal              Float
+  interestRate           Float // annual %
+  tenorMonths            Int
+  appliedDate            DateTime          @default(now())
+  approvedDate           DateTime?
+  disbursedDate          DateTime?
+  closedDate             DateTime?
+  outstandingBalance     Float
+  status                 LoanStatus        @default(APPLIED)
+  collateralDescription  String?
+  guarantorName          String?
+  guarantorPhone         String?
+  collateralStatus       String            @default("PENDING") // PENDING, VERIFIED, REJECTED
+  collateralUrl          String?
+  
+  // Relations
+  customer               CustomerProfile   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  emiInstallments        EMIInstallment[]
+  partPayments           PartPayment[]
+
+  @@index([customerId])
+  @@index([status])
+}
+
+model EMIInstallment {
+  id             String        @id @default(uuid())
+  loanId         String
+  installmentNo  Int
+  dueDate        DateTime
+  principalAmount Float
+  interestAmount Float
+  totalAmount    Float
+  paidAmount     Float         @default(0)
+  penaltyAmount  Float         @default(0)
+  paidDate       DateTime?
+  status         PaymentStatus @default(UNPAID)
+  
+  // Relations
+  loan           Loan          @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@unique([loanId, installmentNo])
+  @@index([dueDate])
+  @@index([status])
+}
+
+model PartPayment {
+  id          String   @id @default(uuid())
+  loanId      String
+  amount      Float
+  paymentDate DateTime @default(now())
+  notes       String?
+  
+  // Relations
+  loan        Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@index([loanId])
+}
+
+model ChitGroup {
+  id                  String            @id @default(uuid())
+  name                String            @unique
+  groupValue          Float
+  durationMonths      Int
+  maxMembers          Int
+  monthlyContribution Float
+  commissionRate      Float             @default(5.0)
+  startDate           DateTime
+  status              String            @default("ACTIVE") // ACTIVE, COMPLETED
+  
+  // Relations
+  members             ChitMember[]
+  auctions            ChitAuction[]
+  installments        ChitInstallment[]
+
+  @@index([status])
+}
+
+model ChitMember {
+  id           String          @id @default(uuid())
+  chitGroupId  String
+  customerId   String
+  slotNumber   Int
+  joinedDate   DateTime        @default(now())
+  
+  // Relations
+  chitGroup    ChitGroup       @relation(fields: [chitGroupId], references: [id], onDelete: Cascade)
+  customer     CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([chitGroupId, slotNumber])
+  @@unique([chitGroupId, customerId])
+}
+
+model ChitAuction {
+  id                    String          @id @default(uuid())
+  chitGroupId           String
+  installmentNo         Int
+  auctionDate           DateTime        @default(now())
+  winningBidderId       String          // CustomerId
+  bidAmount             Float           // amount foregone
+  dividendDistributed   Float
+  nextInstallmentAmount Float
+  
+  // Relations
+  chitGroup             ChitGroup       @relation(fields: [chitGroupId], references: [id], onDelete: Cascade)
+  winningBidder         CustomerProfile @relation(fields: [winningBidderId], references: [id], onDelete: Cascade)
+
+  @@unique([chitGroupId, installmentNo])
+}
+
+model ChitInstallment {
+  id            String        @id @default(uuid())
+  chitGroupId   String
+  customerId    String
+  installmentNo Int
+  dueDate       DateTime
+  dueAmount     Float
+  paidAmount    Float         @default(0)
+  penaltyAmount Float         @default(0)
+  paidDate      DateTime?
+  status        PaymentStatus @default(UNPAID)
+  
+  // Relations
+  chitGroup     ChitGroup       @relation(fields: [chitGroupId], references: [id], onDelete: Cascade)
+  customer      CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([chitGroupId, customerId, installmentNo])
+  @@index([dueDate])
+  @@index([status])
+}
+
+model LICPolicy {
+  id             String               @id @default(uuid())
+  customerId     String
+  policyNumber   String               @unique
+  planName       String
+  sumAssured     Float
+  premiumAmount  Float
+  premiumMode    String               // MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY
+  startDate      DateTime
+  dueDate        DateTime
+  agentId        String?
+  commissionRate Float                @default(15.0)
+  status         String               @default("ACTIVE") // ACTIVE, LAPSED, MATURED
+  
+  // Relations
+  customer       CustomerProfile      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  agent          User?                @relation("AgentPolicies", fields: [agentId], references: [id], onDelete: SetNull)
+  premiumHistory LICPremiumHistory[]
+
+  @@index([policyNumber])
+  @@index([dueDate])
+}
+
+model LICPremiumHistory {
+  id              String    @id @default(uuid())
+  policyId        String
+  premiumAmount   Float
+  paidDate        DateTime  @default(now())
+  agentCommission Float
+  status          String    @default("SUCCESS") // SUCCESS, FAILED
+  
+  // Relations
+  policy          LICPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@index([policyId])
+}
+
+model AIPredictionLog {
+  id                String          @id @default(uuid())
+  customerId        String
+  predictionType    String          // LOAN_APPROVAL, LOAN_DEFAULT, RISK_SCORE
+  predictionScore   Float
+  confidenceScore   Float
+  featureImportance Json
+  inputs            Json
+  createdAt         DateTime        @default(now())
+  
+  // Relations
+  customer          CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([predictionType])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  ipAddress String?
+  details   String?
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model NotificationLog {
+  id           String          @id @default(uuid())
+  customerId   String
+  channel      String          // WHATSAPP, EMAIL
+  templateName String
+  recipient    String
+  content      String
+  status       String          @default("PENDING") // SENT, FAILED, PENDING
+  errorMessage String?
+  createdAt    DateTime        @default(now())
+  
+  // Relations
+  customer     CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
+model CompanySetting {
+  id               String   @id @default(uuid())
+  companyName      String   @default("Swaraj Pvt. Limited")
+  logoUrl          String?
+  address          String   @default("123 Swaraj Chowk, Finance District, New Delhi")
+  baseInterestRate Float    @default(12.0)
+  basePenaltyRate  Float    @default(2.0)
+  smsApiKey        String?
+  whatsappApiKey   String?
+  smtpHost         String   @default("smtp.mailtrap.io")
+  smtpPort         Int      @default(2525)
+  smtpUser         String?
+  smtpPass         String?
+  smtpFrom         String   @default("no-reply@swarajfinance.com")
+  backupSchedule   String   @default("0 0 * * *") // daily at midnight
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
