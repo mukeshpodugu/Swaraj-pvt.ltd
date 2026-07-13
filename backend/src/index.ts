@@ -32,10 +32,15 @@ app.use(helmet({
 }));
 
 // CORS Configuration
+let frontendOrigin = process.env.FRONTEND_ORIGIN || '';
+if (frontendOrigin && !frontendOrigin.startsWith('http')) {
+  frontendOrigin = `https://${frontendOrigin}.onrender.com`;
+}
+
 const allowedOrigins = [
   'http://localhost:5173', // standard Vite frontend
   'http://127.0.0.1:5173',
-  process.env.FRONTEND_ORIGIN || ''
+  frontendOrigin
 ].filter(Boolean);
 
 app.use(cors({

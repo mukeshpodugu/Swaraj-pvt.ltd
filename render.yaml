@@ -17,7 +17,10 @@ services:
       - key: REFRESH_SECRET
         generateValue: true
       - key: FRONTEND_ORIGIN
-        value: https://swaraj-frontend.onrender.com
+        fromService:
+          name: swaraj-frontend
+          type: web
+          property: host
       - key: NODE_ENV
         value: production
 
@@ -30,7 +33,10 @@ services:
     rootDir: frontend
     envVars:
       - key: VITE_API_URL
-        value: https://swaraj-backend.onrender.com
+        fromService:
+          name: swaraj-backend
+          type: web
+          property: host
       - key: NPM_FLAGS
         value: --legacy-peer-deps
       - key: NPM_CONFIG_LEGACY_PEER_DEPS

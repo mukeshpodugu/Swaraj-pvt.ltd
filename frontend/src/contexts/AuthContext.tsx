@@ -2,8 +2,11 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import axios from 'axios';
 import { User, UserRole } from '../../../shared/src/types';
 
-// Configure Axios Defaults
-axios.defaults.baseURL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000';
+let apiBaseURL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000';
+if (apiBaseURL && !apiBaseURL.startsWith('http')) {
+  apiBaseURL = `https://${apiBaseURL}.onrender.com`;
+}
+axios.defaults.baseURL = apiBaseURL;
 axios.defaults.withCredentials = true;
 
 interface AuthContextType {
