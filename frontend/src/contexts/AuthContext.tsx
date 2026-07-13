@@ -3,7 +3,7 @@ import axios from 'axios';
 import { User, UserRole } from '../../../shared/src/types';
 
 // Configure Axios Defaults
-axios.defaults.baseURL = 'http://localhost:5000';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 axios.defaults.withCredentials = true;
 
 interface AuthContextType {

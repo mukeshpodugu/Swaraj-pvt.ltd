@@ -1,0 +1,42 @@
+services:
+  # Backend API Service (Docker Build)
+  - type: web
+    name: swaraj-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    context: .
+    plan: free
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: swaraj-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REFRESH_SECRET
+        generateValue: true
+      - key: FRONTEND_ORIGIN
+        value: https://swaraj-frontend.onrender.com
+      - key: NODE_ENV
+        value: production
+
+  # Frontend Static Site (React Build)
+  - type: web
+    name: swaraj-frontend
+    env: static
+    buildCommand: npm run build
+    publishDir: dist
+    context: frontend
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: swaraj-backend
+          type: web
+          property: url
+
+databases:
+  - name: swaraj-db
+    plan: free
+    postgresMajorVersion: 15

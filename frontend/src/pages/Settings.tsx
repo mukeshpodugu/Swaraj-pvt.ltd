@@ -84,7 +84,7 @@ export default function Settings() {
   };
 
   const handleExportBackup = () => {
-    window.open('http://localhost:5000/api/settings/backup/export', '_blank');
+    window.open(`${axios.defaults.baseURL || 'http://localhost:5000'}/api/settings/backup/export`, '_blank');
   };
 
   const handleRestoreBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
