@@ -31,6 +31,8 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://swaraj-backend.onrender.com
+      - key: NPM_FLAGS
+        value: --legacy-peer-deps
 
 databases:
   - name: swaraj-db
