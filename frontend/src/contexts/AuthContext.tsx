@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import axios from 'axios';
 import { User, UserRole } from '../../../shared/src/types';
 
-let apiBaseURL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000';
+// @ts-ignore
+let apiBaseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 if (apiBaseURL && !apiBaseURL.startsWith('http')) {
   apiBaseURL = `https://${apiBaseURL}.onrender.com`;
 }
