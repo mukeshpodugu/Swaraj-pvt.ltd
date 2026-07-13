@@ -2,7 +2,7 @@ services:
   # Backend API Service (Docker Build)
   - type: web
     name: swaraj-backend
-    env: docker
+    runtime: docker
     dockerfilePath: backend/Dockerfile
     plan: free
     envVars:
@@ -22,10 +22,11 @@ services:
         value: production
 
   # Frontend Static Site (React Build)
-  - type: static
+  - type: web
     name: swaraj-frontend
+    runtime: static
     buildCommand: npm run build
-    publishDir: dist
+    staticPublishPath: dist
     rootDir: frontend
     envVars:
       - key: VITE_API_URL
