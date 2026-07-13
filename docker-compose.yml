@@ -15,7 +15,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
     container_name: swaraj_backend_server
     restart: always
     ports:
@@ -32,7 +34,9 @@ services:
     command: sh -c "npx prisma db push && npx prisma db seed && node dist/index.js"
 
   frontend:
-    build: ./frontend
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
     container_name: swaraj_frontend_nginx
     restart: always
     ports:

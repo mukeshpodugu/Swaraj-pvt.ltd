@@ -56,7 +56,8 @@ export default function Reports() {
       if (format === 'excel') ext = 'xlsx';
       else if (format === 'pdf') ext = 'pdf';
 
-      const blob = new Blob([response.data], { type: response.headers['content-type'] });
+      const contentType = response.headers['content-type'] as string | undefined;
+      const blob = new Blob([response.data], { type: contentType || undefined });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
