@@ -4,7 +4,6 @@ services:
     name: swaraj-backend
     env: docker
     dockerfilePath: backend/Dockerfile
-    context: .
     plan: free
     envVars:
       - key: PORT
@@ -23,12 +22,11 @@ services:
         value: production
 
   # Frontend Static Site (React Build)
-  - type: web
+  - type: static
     name: swaraj-frontend
-    env: static
     buildCommand: npm run build
     publishDir: dist
-    context: frontend
+    rootDir: frontend
     envVars:
       - key: VITE_API_URL
         fromService:
