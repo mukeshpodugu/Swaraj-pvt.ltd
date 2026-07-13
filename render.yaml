@@ -22,7 +22,7 @@ services:
         value: production
 
   # Frontend Static Site (React Build)
-  - type: static
+  - type: static_site
     name: swaraj-frontend
     buildCommand: npm run build
     publishDir: dist
