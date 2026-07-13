@@ -30,10 +30,7 @@ services:
     rootDir: frontend
     envVars:
       - key: VITE_API_URL
-        fromService:
-          name: swaraj-backend
-          type: web
-          property: url
+        value: https://swaraj-backend.onrender.com
 
 databases:
   - name: swaraj-db
