@@ -18,4 +18,4 @@ RUN npm run build
 
 EXPOSE 5000
 
-CMD ["node", "dist/app/src/index.js"]
+CMD ["sh", "-c", "npx prisma db push && npx prisma db seed && node dist/app/src/index.js"]
