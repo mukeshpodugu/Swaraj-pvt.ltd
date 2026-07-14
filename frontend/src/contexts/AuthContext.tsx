@@ -14,9 +14,9 @@ interface AuthContextType {
   user: User & { customerProfileId?: string } | null;
   loading: boolean;
   accessToken: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  googleSignIn: (email: string, fullName: string, photoUrl: string, googleUid: string) => Promise<void>;
-  register: (email: string, password: string, fullName: string, phone: string, role: UserRole) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
+  googleSignIn: (email: string, fullName: string, photoUrl: string, googleUid: string) => Promise<any>;
+  register: (email: string, password: string, fullName: string, phone: string, role: UserRole) => Promise<any>;
   logout: () => Promise<void>;
 }
 

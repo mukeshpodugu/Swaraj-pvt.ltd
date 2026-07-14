@@ -39,6 +39,7 @@ export default function Login() {
         await register(email, password, fullName, phone, role);
         setInfo('Account created successfully.');
         navigate(role === UserRole.CUSTOMER ? '/portal' : '/dashboard');
+      } else {
         // Handle login
         const data = await login(email, password);
         const userRole = data.user.role;
@@ -47,6 +48,7 @@ export default function Login() {
         } else {
           navigate('/dashboard');
         }
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Authentication attempt failed. Please check inputs.');
     } finally {
