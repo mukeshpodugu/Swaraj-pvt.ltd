@@ -96,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(res.data.accessToken);
     setUser(res.data.user);
     setAuthHeader(res.data.accessToken);
+    return res.data;
   };
 
   const googleSignIn = async (email: string, fullName: string, photoUrl: string, googleUid: string) => {
@@ -103,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(res.data.accessToken);
     setUser(res.data.user);
     setAuthHeader(res.data.accessToken);
+    return res.data;
   };
 
   const register = async (email: string, password: string, fullName: string, phone: string, role: UserRole) => {
@@ -110,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(res.data.accessToken);
     setUser(res.data.user);
     setAuthHeader(res.data.accessToken);
+    return res.data;
   };
 
   const logout = async () => {

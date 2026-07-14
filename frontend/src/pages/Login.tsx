@@ -39,19 +39,14 @@ export default function Login() {
         await register(email, password, fullName, phone, role);
         setInfo('Account created successfully.');
         navigate(role === UserRole.CUSTOMER ? '/portal' : '/dashboard');
-      } else {
         // Handle login
-        await login(email, password);
-        // Redirect based on role check in context
-        const axios = (await import('axios')).default;
-        const checkRes = await axios.post('/api/auth/refresh');
-        const userRole = checkRes.data.user.role;
+        const data = await login(email, password);
+        const userRole = data.user.role;
         if (userRole === UserRole.CUSTOMER) {
           navigate('/portal');
         } else {
           navigate('/dashboard');
         }
-      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Authentication attempt failed. Please check inputs.');
     } finally {
