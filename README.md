@@ -77,7 +77,7 @@ npx prisma db push
 npx prisma db seed
 npm run dev
 ```
-*   *Note: The seed script populates sample customers, active loans, chits, and system settings. The server runs at `http://localhost:5000`.*
+*   *Note: The seed script populates sample customers, active loans, chits, and system settings. The server runs at `https://swaraj-backend-w769.onrender.com`.*
 
 ### 3. Frontend Initialization
 ```bash
@@ -85,7 +85,7 @@ cd ../frontend
 npm install
 npm run dev
 ```
-*   *The Vite client runs at `http://localhost:5173`. Access the admin dashboard or click portal in the layout to switch to the customer dashboard.*
+*   *The Vite client runs at `https://swaraj-frontend-9nw2.onrender.com`. Access the admin dashboard or click portal in the layout to switch to the customer dashboard.*
 
 ---
 
