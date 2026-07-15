@@ -71,12 +71,27 @@ export default function CustomerPortal() {
   }, [user]);
 
   async function loadCustomerData() {
-    if (!user?.customerProfileId) return;
+    let profileId = user?.customerProfileId;
+
     try {
       setLoading(true);
+
+      // Backup fallback search by email if profile ID is missing on user context
+      if (!profileId && user?.email) {
+        const searchRes = await axios.get(`/api/customers?search=${encodeURIComponent(user.email)}`);
+        if (searchRes.data?.data && searchRes.data.data.length > 0) {
+          profileId = searchRes.data.data[0].id;
+        }
+      }
+
+      if (!profileId) {
+        setLoading(false);
+        return;
+      }
+
       const [profileRes, timelineRes, chitsRes] = await Promise.all([
-        axios.get(`/api/customers/${user.customerProfileId}`),
-        axios.get(`/api/customers/${user.customerProfileId}/timeline`),
+        axios.get(`/api/customers/${profileId}`),
+        axios.get(`/api/customers/${profileId}/timeline`),
         axios.get('/api/chits')
       ]);
       setProfile(profileRes.data);
@@ -228,12 +243,33 @@ export default function CustomerPortal() {
     }
   };
 
-  if (loading || !profile) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
         <div className="text-center space-y-3">
           <ShieldCheck size={48} className="mx-auto text-primary animate-bounce" />
           <p className="text-sm font-semibold">Configuring Customer Portal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans p-6">
+        <div className="text-center max-w-sm space-y-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+          <AlertCircle size={48} className="mx-auto text-destructive animate-pulse" />
+          <h2 className="text-lg font-bold text-white">Profile Configuration Error</h2>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            We were unable to load your customer profile context. Please contact support or try logging out and logging back in.
+          </p>
+          <button
+            onClick={handleLogout}
+            className="w-full bg-destructive hover:bg-red-700 text-white font-bold py-2.5 rounded-lg text-xs transition-colors flex items-center justify-center gap-2"
+          >
+            <LogOut size={14} />
+            <span>Sign Out</span>
+          </button>
         </div>
       </div>
     );

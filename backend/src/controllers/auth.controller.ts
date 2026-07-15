@@ -47,8 +47,9 @@ export class AuthController {
       });
 
       // If user is a customer, automatically create an empty CustomerProfile
+      let customerProfileId: string | undefined = undefined;
       if (userRole === UserRole.CUSTOMER) {
-        await prisma.customerProfile.create({
+        const profile = await prisma.customerProfile.create({
           data: {
             userId: user.id,
             aadhaar: `PENDING_${user.id.substring(0, 8)}`,
@@ -63,6 +64,7 @@ export class AuthController {
             status: 'ACTIVE'
           }
         });
+        customerProfileId = profile.id;
         // Dispatch Welcome Email
         await MailService.sendWelcomeEmail(user.id, email, fullName);
       }
@@ -76,6 +78,7 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        domain: '.onrender.com',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
 
@@ -87,7 +90,8 @@ export class AuthController {
           email: user.email,
           fullName: user.fullName,
           phone: user.phone,
-          role: user.role
+          role: user.role,
+          customerProfileId
         }
       });
     } catch (err: any) {
@@ -132,6 +136,7 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        domain: '.onrender.com',
         maxAge: 7 * 24 * 60 * 60 * 1000
       });
 
@@ -213,6 +218,7 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
+        domain: '.onrender.com',
         maxAge: 7 * 24 * 60 * 60 * 1000
       });
 
@@ -345,7 +351,15 @@ export class AuthController {
    * Log out and delete refresh token cookie
    */
   public static async logout(req: Request, res: Response) {
-    res.clearCookie('refreshToken');
+    // Clear the refresh token cookie with same attributes used when setting it
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+      domain: '.onrender.com',
+      // Setting expires in the past ensures removal
+      expires: new Date(0)
+    });
     return res.json({ message: 'Logged out successfully.' });
   }
 }
