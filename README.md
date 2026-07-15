@@ -1,6 +1,12 @@
 # Swaraj FinancePro AI Platform
 > **Enterprise Credit, Chit Funds, and LIC Policy Management Suite**
 
+### 🌐 Live Deployments
+*   **Frontend Application:** [https://swaraj-frontend-9nw2.onrender.com](https://swaraj-frontend-9nw2.onrender.com)
+*   **Backend API Services:** [https://swaraj-backend-w769.onrender.com](https://swaraj-backend-w769.onrender.com)
+
+---
+
 Swaraj FinancePro AI is an audit-ready, enterprise-grade financial management platform tailored for local credit lending institutions, chit mutual funds, and LIC policy agencies. Powered by predictive AI risk profiling, it provides real-time underwriting risk metrics, automated collections reminders, and structured report exports.
 
 ---
